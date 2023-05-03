@@ -1,11 +1,4 @@
-import {
-	Plugin,
-	Notice,
-	Editor,
-	MarkdownView,
-	WorkspaceLeaf,
-	Workspace,
-} from "obsidian";
+import { Plugin, Notice, MarkdownView, Workspace, loadMermaid } from "obsidian";
 import {
 	ConfluenceUploadSettings,
 	Publisher,
@@ -16,54 +9,34 @@ import { ConfluenceSettingTab } from "./ConfluenceSettingTab";
 import ObsidianAdaptor from "./adaptors/obsidian";
 import { CompletedModal } from "./CompletedModal";
 import { ObsidianConfluenceClient } from "./MyBaseClient";
-import AdfView, { ADF_VIEW_TYPE } from "./AdfView";
 import {
 	ConfluencePerPageForm,
 	ConfluencePerPageUIValues,
 	mapFrontmatterToConfluencePerPageUIValues,
 } from "./ConfluencePerPageForm";
+import { Mermaid } from "mermaid";
+
+export interface ObsidianPluginSettings
+	extends ConfluenceUploadSettings.ConfluenceSettings {
+	mermaidTheme:
+		| "match-obsidian"
+		| "light-obsidian"
+		| "dark-obsidian"
+		| "default"
+		| "neutral"
+		| "dark"
+		| "forest";
+}
 
 export default class ConfluencePlugin extends Plugin {
-	settings: ConfluenceUploadSettings.ConfluenceSettings;
+	settings!: ObsidianPluginSettings;
 	private isSyncing = false;
-	adfView: AdfView;
-	workspace: Workspace;
-	publisher: Publisher;
-	adaptor: ObsidianAdaptor;
+	workspace!: Workspace;
+	publisher!: Publisher;
+	adaptor!: ObsidianAdaptor;
 
 	activeLeafPath(workspace: Workspace) {
 		return workspace.getActiveViewOfType(MarkdownView)?.file.path;
-	}
-
-	activeLeafName(workspace: Workspace) {
-		return (
-			workspace.getActiveViewOfType(MarkdownView)?.getDisplayText() ?? ""
-		);
-	}
-
-	adfPreview() {
-		const fileInfo = {
-			path: this.activeLeafPath(this.workspace),
-			basename: this.activeLeafName(this.workspace),
-		};
-		this.initPreview(fileInfo);
-	}
-
-	async initPreview(fileInfo: {
-		path: string | undefined;
-		basename: string;
-	}) {
-		if (this.app.workspace.getLeavesOfType(ADF_VIEW_TYPE).length > 0) {
-			return;
-		}
-		const preview = this.app.workspace.getLeaf("split");
-		const mmPreview = new AdfView(
-			this.settings,
-			preview,
-			fileInfo,
-			this.adaptor
-		);
-		preview.open(mmPreview);
 	}
 
 	async init() {
@@ -76,7 +49,14 @@ export default class ConfluencePlugin extends Plugin {
 			this.settings,
 			this.app
 		);
-		const mermaidRenderer = new ElectronMermaidRenderer();
+
+		const mermaidItems = await this.getMermaidItems();
+		const mermaidRenderer = new ElectronMermaidRenderer(
+			mermaidItems.extraStyleSheets,
+			mermaidItems.extraStyles,
+			mermaidItems.mermaidConfig,
+			mermaidItems.bodyStyles
+		);
 		const confluenceClient = new ObsidianConfluenceClient({
 			host: this.settings.confluenceBaseUrl,
 			authentication: {
@@ -97,67 +77,103 @@ export default class ConfluencePlugin extends Plugin {
 		);
 	}
 
-	async onload() {
+	async getMermaidItems() {
+		const extraStyles: string[] = [];
+		const extraStyleSheets: string[] = [];
+		let bodyStyles = "";
+		const body = document.querySelector("body") as HTMLBodyElement;
+
+		switch (this.settings.mermaidTheme) {
+			case "default":
+			case "neutral":
+			case "dark":
+			case "forest":
+				return {
+					extraStyleSheets,
+					extraStyles,
+					mermaidConfig: { theme: this.settings.mermaidTheme },
+					bodyStyles,
+				};
+			case "match-obsidian":
+				bodyStyles = body.className;
+				break;
+			case "dark-obsidian":
+				bodyStyles = "theme-dark";
+				break;
+			case "light-obsidian":
+				bodyStyles = "theme-dark";
+				break;
+			default:
+				throw new Error("Missing theme");
+		}
+
+		extraStyleSheets.push("app://obsidian.md/app.css");
+
+		// @ts-expect-error
+		const cssTheme = this.app.vault?.getConfig("cssTheme") as string;
+		if (cssTheme) {
+			const themeCss = await this.app.vault.adapter.read(
+				`.obsidian/themes/${cssTheme}/theme.css`
+			);
+			extraStyles.push(themeCss);
+		}
+
+		const cssSnippets =
+			// @ts-expect-error
+			(this.app.vault?.getConfig("enabledCssSnippets") as string[]) ?? [];
+		for (const snippet of cssSnippets) {
+			const themeCss = await this.app.vault.adapter.read(
+				`.obsidian/snippets/${snippet}.css`
+			);
+			extraStyles.push(themeCss);
+		}
+
+		return {
+			extraStyleSheets,
+			extraStyles,
+			mermaidConfig: (
+				(await loadMermaid()) as Mermaid
+			).mermaidAPI.getConfig(),
+			bodyStyles,
+		};
+	}
+
+	override async onload() {
 		await this.init();
 
-		this.registerView(
-			ADF_VIEW_TYPE,
-			(leaf: WorkspaceLeaf) =>
-				new AdfView(
-					this.settings,
-					leaf,
-					{
-						path: this.activeLeafPath(this.workspace),
-						basename: this.activeLeafName(this.workspace),
-					},
-					this.adaptor
-				)
-		);
-
-		this.addCommand({
-			id: "adf-preview",
-			name: "Preview the current note rendered to ADF",
-			callback: () => this.adfPreview(),
-			hotkeys: [],
-		});
-
-		this.addRibbonIcon(
-			"cloud",
-			"Publish to Confluence",
-			async (evt: MouseEvent) => {
-				if (this.isSyncing) {
-					new Notice("Syncing already on going");
-					return;
-				}
-				this.isSyncing = true;
-				try {
-					const stats = await this.publisher.doPublish();
-					new CompletedModal(this.app, {
-						uploadResults: stats,
-					}).open();
-				} catch (error) {
-					if (error instanceof Error) {
-						new CompletedModal(this.app, {
-							uploadResults: {
-								errorMessage: error.message,
-								failedFiles: [],
-								filesUploadResult: [],
-							},
-						}).open();
-					} else {
-						new CompletedModal(this.app, {
-							uploadResults: {
-								errorMessage: JSON.stringify(error),
-								failedFiles: [],
-								filesUploadResult: [],
-							},
-						}).open();
-					}
-				} finally {
-					this.isSyncing = false;
-				}
+		this.addRibbonIcon("cloud", "Publish to Confluence", async () => {
+			if (this.isSyncing) {
+				new Notice("Syncing already on going");
+				return;
 			}
-		);
+			this.isSyncing = true;
+			try {
+				const stats = await this.publisher.doPublish();
+				new CompletedModal(this.app, {
+					uploadResults: stats,
+				}).open();
+			} catch (error) {
+				if (error instanceof Error) {
+					new CompletedModal(this.app, {
+						uploadResults: {
+							errorMessage: error.message,
+							failedFiles: [],
+							filesUploadResult: [],
+						},
+					}).open();
+				} else {
+					new CompletedModal(this.app, {
+						uploadResults: {
+							errorMessage: JSON.stringify(error),
+							failedFiles: [],
+							filesUploadResult: [],
+						},
+					}).open();
+				}
+			} finally {
+				this.isSyncing = false;
+			}
+		});
 
 		this.addCommand({
 			id: "publish-current",
@@ -198,6 +214,7 @@ export default class ConfluencePlugin extends Plugin {
 					}
 					return true;
 				}
+				return true;
 			},
 		});
 
@@ -238,19 +255,19 @@ export default class ConfluencePlugin extends Plugin {
 								this.isSyncing = false;
 							});
 					}
-					return true;
 				}
+				return true;
 			},
 		});
 
 		this.addCommand({
 			id: "enable-publishing",
 			name: "Enable publishing to Confluence",
-			editorCheckCallback: (
-				checking: boolean,
-				editor: Editor,
-				view: MarkdownView
-			) => {
+			editorCheckCallback: (checking, _editor, view) => {
+				if (!view.file) {
+					return false;
+				}
+
 				if (checking) {
 					const frontMatter = this.app.metadataCache.getCache(
 						view.file.path
@@ -268,6 +285,7 @@ export default class ConfluencePlugin extends Plugin {
 					view.file,
 					(frontmatter) => {
 						if (
+							view.file &&
 							view.file.path.startsWith(
 								this.settings.folderToPublish
 							)
@@ -278,17 +296,18 @@ export default class ConfluencePlugin extends Plugin {
 						}
 					}
 				);
+				return true;
 			},
 		});
 
 		this.addCommand({
 			id: "disable-publishing",
 			name: "Disable publishing to Confluence",
-			editorCheckCallback: (
-				checking: boolean,
-				editor: Editor,
-				view: MarkdownView
-			) => {
+			editorCheckCallback: (checking, _editor, view) => {
+				if (!view.file) {
+					return false;
+				}
+
 				if (checking) {
 					const frontMatter = this.app.metadataCache.getCache(
 						view.file.path
@@ -306,6 +325,7 @@ export default class ConfluencePlugin extends Plugin {
 					view.file,
 					(frontmatter) => {
 						if (
+							view.file &&
 							view.file.path.startsWith(
 								this.settings.folderToPublish
 							)
@@ -316,13 +336,18 @@ export default class ConfluencePlugin extends Plugin {
 						}
 					}
 				);
+				return true;
 			},
 		});
 
 		this.addCommand({
 			id: "page-settings",
 			name: "Update Confluence Page Settings",
-			editorCallback: (editor: Editor, view: MarkdownView) => {
+			editorCallback: (_editor, view) => {
+				if (!view.file) {
+					return false;
+				}
+
 				const frontMatter = this.app.metadataCache.getCache(
 					view.file.path
 				)?.frontmatter;
@@ -361,18 +386,20 @@ export default class ConfluencePlugin extends Plugin {
 						close();
 					},
 				}).open();
+				return true;
 			},
 		});
 
 		this.addSettingTab(new ConfluenceSettingTab(this.app, this));
 	}
 
-	async onunload() {}
+	override async onunload() {}
 
 	async loadSettings() {
 		this.settings = Object.assign(
 			{},
 			ConfluenceUploadSettings.DEFAULT_SETTINGS,
+			{ mermaidTheme: "match-obsidian" },
 			await this.loadData()
 		);
 	}
