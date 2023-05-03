@@ -15,6 +15,9 @@ Copyright (c) 2022 Atlassian US, Inc.
 - CLI for pushing markdown files from disk
 - Commands and ribbon icon for easy access
 
+## Issues
+Please log issues to https://github.com/markdown-confluence/markdown-confluence/issues as this is where the code is being developed. 
+
 ## Getting Started
 
 ## Alternative Installation
@@ -32,7 +35,7 @@ Copyright (c) 2022 Atlassian US, Inc.
 - `Atlassian API Token`: Your Atlassian API token. You can generate one from your [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens).
 - `Folder To Publish`: The name of the folder in Obsidian containing the notes you want to publish (default: "Confluence Pages")
 
-![Settings](../../docs/screenshots/settings.png)
+![Settings](./docs/screenshots/settings.png)
 
 ## Usage
 
@@ -40,14 +43,14 @@ Copyright (c) 2022 Atlassian US, Inc.
 
 Click the cloud icon in the ribbon to publish the notes from the configured folder to Confluence.
 
-![Ribbon icon](../../docs/screenshots/ribbon.png)
+![Ribbon icon](./docs/screenshots/ribbon.png)
 
 
 ### Commands
 
 Use the command palette (`Ctrl/Cmd + P`) to execute the "Publish All to Confluence" command, which publishes all the notes from the configured folder to Confluence.
 
-![Commands](../../docs/screenshots/commands.png)
+![Commands](./docs/screenshots/commands.png)
 
 ### connie-publish Frontmatter
 
