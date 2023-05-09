@@ -19,6 +19,7 @@ Copyright (c) 2022 Atlassian US, Inc.
 Please log issues to https://github.com/markdown-confluence/markdown-confluence/issues as this is where the code is being developed. 
 
 ## Getting Started
+
 1. Install the `confluence-integration` plugin from Obsidian's community plugins browser.
 2. Open the plugin settings and configure the following fields:
 

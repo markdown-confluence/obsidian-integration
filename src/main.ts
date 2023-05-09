@@ -3,6 +3,8 @@ import {
 	ConfluenceUploadSettings,
 	Publisher,
 	ConfluencePageConfig,
+	StaticSettingsLoader,
+	renderADFDoc,
 } from "@markdown-confluence/lib";
 import { ElectronMermaidRenderer } from "@markdown-confluence/mermaid-electron-renderer";
 import { ConfluenceSettingTab } from "./ConfluenceSettingTab";
@@ -67,8 +69,7 @@ export default class ConfluencePlugin extends Plugin {
 			},
 		});
 
-		const settingsLoader =
-			new ConfluenceUploadSettings.StaticSettingsLoader(this.settings);
+		const settingsLoader = new StaticSettingsLoader(this.settings);
 		this.publisher = new Publisher(
 			this.adaptor,
 			settingsLoader,
@@ -173,6 +174,38 @@ export default class ConfluencePlugin extends Plugin {
 			} finally {
 				this.isSyncing = false;
 			}
+		});
+
+		this.addCommand({
+			id: "adf-to-markdown",
+			name: "ADF To Markdown",
+			callback: async () => {
+				console.log("HMMMM");
+				const json = JSON.parse(
+					'{"type":"doc","content":[{"type":"paragraph","content":[{"text":"Testing","type":"text"}]}],"version":1}'
+				);
+				console.log({ json });
+
+				const confluenceClient = new ObsidianConfluenceClient({
+					host: this.settings.confluenceBaseUrl,
+					authentication: {
+						basic: {
+							email: this.settings.atlassianUserName,
+							apiToken: this.settings.atlassianApiToken,
+						},
+					},
+				});
+				const testingPage =
+					await confluenceClient.content.getContentById({
+						id: "9732097",
+						expand: ["body.atlas_doc_format", "space"],
+					});
+				const adf = JSON.parse(
+					testingPage.body?.atlas_doc_format?.value ||
+						'{type: "doc", content:[]}'
+				);
+				renderADFDoc(adf);
+			},
 		});
 
 		this.addCommand({
