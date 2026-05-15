@@ -1,8 +1,8 @@
-import { Modal, App, FrontMatterCache } from "obsidian";
+import {Modal, App, FrontMatterCache} from "obsidian";
 import ReactDOM from "react-dom";
-import React, { useState, ChangeEvent } from "react";
-import { ConfluencePageConfig } from "@markdown-confluence/lib";
-import { Property } from "csstype";
+import React, {useState, ChangeEvent} from "react";
+import {ConfluencePageConfig} from "@markdown-confluence/lib";
+import {Property} from "csstype";
 
 export type ConfluencePerPageUIValues = {
 	[K in keyof ConfluencePageConfig.ConfluencePerPageConfig]: {
@@ -31,7 +31,7 @@ export function mapFrontmatterToConfluencePerPageUIValues(
 				default: defaultValue,
 			} = config[
 				propertyKey as keyof ConfluencePageConfig.ConfluencePerPageConfig
-			];
+				];
 			const frontmatterValue = frontmatter[key];
 
 			if (frontmatterValue !== undefined) {
@@ -44,12 +44,14 @@ export function mapFrontmatterToConfluencePerPageUIValues(
 					case "options":
 					case "array-text":
 						result[propertyKey as keyof ConfluencePerPageUIValues] =
-							{ value: defaultValue as never, isSet: false };
+							// @ts-ignore
+							{value: defaultValue as never, isSet: false};
 						break;
 					case "boolean":
 					case "text":
 						result[propertyKey as keyof ConfluencePerPageUIValues] =
-							{ value: undefined, isSet: false };
+							// @ts-ignore
+							{value: undefined, isSet: false};
 						break;
 					default:
 						throw new Error("Missing case for inputType");
@@ -82,14 +84,14 @@ const handleChange = (
 ) => {
 	const validationResult = inputValidator(value);
 
-	setValues((prevValues) => ({
+	setValues((prevValues: any) => ({
 		...prevValues,
 		[key]: {
 			...prevValues[key as keyof ConfluencePerPageUIValues],
-			...(isSetValue ? { isSet: value } : { value }),
+			...(isSetValue ? {isSet: value} : {value}),
 		},
 	}));
-	setErrors((prevErrors) => ({
+	setErrors((prevErrors: any) => ({
 		...prevErrors,
 		[key]: validationResult.valid ? [] : validationResult.errors,
 	}));
@@ -196,7 +198,7 @@ const renderArrayText = (
 							const newArray = [
 								...(values[
 									key as keyof ConfluencePerPageUIValues
-								].value as unknown as string[]),
+									].value as unknown as string[]),
 							];
 							newArray[index] = e.target.value;
 							handleChange(
@@ -411,10 +413,10 @@ const renderOptions = (
 );
 
 const ConfluenceForm: React.FC<FormProps> = ({
-	config,
-	initialValues,
-	onSubmit,
-}) => {
+												 config,
+												 initialValues,
+												 onSubmit,
+											 }: { config: any, initialValues: any, onSubmit: any }) => {
 	const [values, setValues] =
 		useState<ConfluencePerPageUIValues>(initialValues);
 	const [errors, setErrors] = useState<Record<string, Error[]>>({});
@@ -429,67 +431,67 @@ const ConfluenceForm: React.FC<FormProps> = ({
 			<h1>Update Confluence Page Settings</h1>
 			<table>
 				<thead>
-					<tr>
-						<td>YAML Key</td>
-						<td>Value</td>
-						<td>Update</td>
-					</tr>
+				<tr>
+					<td>YAML Key</td>
+					<td>Value</td>
+					<td>Update</td>
+				</tr>
 				</thead>
 				<tbody>
-					{Object.entries(config).map(([key, config]) => {
-						switch (config.inputType) {
-							case "text":
-								return renderTextInput(
-									key,
-									config as ConfluencePageConfig.FrontmatterConfig<
-										string,
-										"text"
-									>,
-									values,
-									errors,
-									setValues,
-									setErrors,
-								);
-							case "array-text":
-								return renderArrayText(
-									key,
-									config as ConfluencePageConfig.FrontmatterConfig<
-										string[],
-										"array-text"
-									>,
-									values,
-									errors,
-									setValues,
-									setErrors,
-								);
-							case "boolean":
-								return renderBoolean(
-									key,
-									config as ConfluencePageConfig.FrontmatterConfig<
-										boolean,
-										"boolean"
-									>,
-									values,
-									errors,
-									setValues,
-									setErrors,
-								);
-							case "options":
-								return renderOptions(
-									key,
-									config as ConfluencePageConfig.FrontmatterConfig<
-										ConfluencePageConfig.PageContentType,
-										"options"
-									>,
-									values,
-									errors,
-									setValues,
-									setErrors,
-								);
-							default:
-								return null;
-						}
-					})}
+				{Object.entries(config).map(([key, config]: [string, any]) => {
+					switch (config.inputType) {
+						case "text":
+							return renderTextInput(
+								key,
+								config as ConfluencePageConfig.FrontmatterConfig<
+									string,
+									"text"
+								>,
+								values,
+								errors,
+								setValues,
+								setErrors,
+							);
+						case "array-text":
+							return renderArrayText(
+								key,
+								config as ConfluencePageConfig.FrontmatterConfig<
+									string[],
+									"array-text"
+								>,
+								values,
+								errors,
+								setValues,
+								setErrors,
+							);
+						case "boolean":
+							return renderBoolean(
+								key,
+								config as ConfluencePageConfig.FrontmatterConfig<
+									boolean,
+									"boolean"
+								>,
+								values,
+								errors,
+								setValues,
+								setErrors,
+							);
+						case "options":
+							return renderOptions(
+								key,
+								config as ConfluencePageConfig.FrontmatterConfig<
+									ConfluencePageConfig.PageContentType,
+									"options"
+								>,
+								values,
+								errors,
+								setValues,
+								setErrors,
+							);
+						default:
+							return null;
+					}
+				})}
 				</tbody>
 			</table>
 			<button type="submit">Submit</button>
@@ -506,7 +508,7 @@ export class ConfluencePerPageForm extends Modal {
 	}
 
 	override onOpen() {
-		const { contentEl } = this;
+		const {contentEl} = this;
 		const test: FormProps = {
 			...this.modalProps,
 			onSubmit: (values) => {
@@ -518,7 +520,7 @@ export class ConfluencePerPageForm extends Modal {
 	}
 
 	override onClose() {
-		const { contentEl } = this;
+		const {contentEl} = this;
 		ReactDOM.unmountComponentAtNode(contentEl);
 		contentEl.empty();
 	}

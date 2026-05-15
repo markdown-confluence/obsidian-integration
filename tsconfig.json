@@ -1,13 +1,30 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions":{
-     "baseUrl":".",
-     "rootDir": "src",
-         "outDir": "dist",
-         "declarationDir": "dist",
-         "noEmit": true,
-         "skipLibCheck": true,
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist",
+    "jsx": "react-jsx",
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "module": "ESNext",
+    "target": "ES6",
+    "allowJs": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "isolatedModules": true,
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "DOM",
+      "ES5",
+      "ES6",
+      "ES7"
+    ]
   },
-  "include":[ "**/*.ts", "**/*.tsx"  ],
-    "exclude": ["node_modules", "packages/**/dist/*", "dist/*", "**/*.test.ts", "**/jest.config.ts"]
+  "include": [
+    "**/*.ts", "**/*.tsx"
+  ],
+  "exclude": ["node_modules", "packages/**/dist/*", "dist/*", "**/*.test.ts", "**/jest.config.ts"]
+
 }
