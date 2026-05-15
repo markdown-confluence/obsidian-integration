@@ -3,7 +3,6 @@
     "baseUrl": ".",
     "rootDir": "src",
     "outDir": "dist",
-    "declarationDir": "dist",
     "jsx": "react-jsx",
     "inlineSourceMap": true,
     "inlineSources": true,

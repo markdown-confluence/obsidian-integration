@@ -51,7 +51,7 @@ export default class ConfluencePlugin extends Plugin {
 	adaptor!: ObsidianAdaptor;
 
 	activeLeafPath(workspace: Workspace) {
-		return workspace.getActiveViewOfType(MarkdownView)?.file.path;
+		return workspace.getActiveViewOfType(MarkdownView)?.file?.path;
 	}
 
 	async init() {
@@ -82,7 +82,7 @@ export default class ConfluencePlugin extends Plugin {
 			},
 			middlewares: {
 				onError(e) {
-					if ("response" in e && "data" in e.response) {
+					if ("response" in e && e.response && "data" in e.response) {
 						e.message =
 							typeof e.response.data === "string"
 								? e.response.data
