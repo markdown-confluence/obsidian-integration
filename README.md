@@ -1,71 +1,48 @@
-# Obsidian Confluence Integration Plugin
+# Markdown to Confluence Tools
 
+[![Discord](https://img.shields.io/discord/1102841755646316576)](https://discord.gg/3ZVEc3S48x)  
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/markdown-confluence/markdown-confluence/badge)](https://api.securityscorecards.dev/projects/github.com/markdown-confluence/markdown-confluence)
+[![Known Vulnerabilities](https://snyk.io/test/github/markdown-confluence/markdown-confluence/badge.svg)](https://snyk.io/test/github/markdown-confluence/markdown-confluence)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/markdown-confluence/markdown-confluence/release-please.yml)
+![Lines of code](https://img.shields.io/tokei/lines/github/markdown-confluence/markdown-confluence)
+![GitHub manifest version](https://img.shields.io/github/manifest-json/v/markdown-confluence/obsidian-integration)  
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
-Copyright (c) 2022 Atlassian Pty Ltd
 
-Copyright (c) 2022 Atlassian US, Inc.
 
-`Obsidian Confluence Integration Plugin` is an open-source plugin for [Obsidian.md](https://obsidian.md/) that allows you to publish markdown content from Obsidian to [Atlassian Confluence](https://www.atlassian.com/software/confluence). It supports [Obsidian markdown extensions](https://help.obsidian.md/How+to/Format+your+notes) for richer content and includes a CLI for pushing markdown files from the command line. Currently, the plugin only supports Atlassian Cloud instances.
+Obsidian Downloads: ![GitHub all releases](https://img.shields.io/github/downloads/markdown-confluence/obsidian-integration/total)
+
+Copyright © 2022 Atlassian Pty Ltd   
+Copyright © 2022 Atlassian US, Inc  
+
+Welcome to the `Markdown to Confluence Tools` project! This mono repository contains a collection of tools to convert and publish your Markdown files to Confluence, while using the Atlassian Document Format (ADF). We provide you with an Obsidian plugin, a package CLI, a Docker CLI, a GitHub Action, and a package library.
+
+We focus on providing an opinionated, simple publishing workflow, with [Obsidian](https://obsidian.md/) as the recommended editor. However, you can use our tools with any Markdown files.
+
+All projects within this mono repo use the core package library [@markdown-confluence/lib](https://www.npmjs.com/package/@markdown-confluence/lib) to provide the same features, ensuring consistent results across different interfaces.
+
+## Table of Contents
+
+- [Features](#features)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-- Publish Obsidian notes to Atlassian Confluence
-- Support for Obsidian markdown extensions
-- CLI for pushing markdown files from disk
-- Commands and ribbon icon for easy access
+- Converts Markdown files to [Atlassian Document Format (ADF)](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/)
+- Simple publishing workflow with [Obsidian](https://obsidian.md/) as the recommended editor
+- Can be used with any Markdown files
+- Supports Obsidian plugin, package CLI, Docker CLI, GitHub Action, and package library
 
-## Issues
-Please log issues to https://github.com/markdown-confluence/markdown-confluence/issues as this is where the code is being developed. 
+## Documentation
 
-## Getting Started
+For detailed installation and usage instructions, please visit our [documentation](https://markdown-confluence.com/). Before upgrading from 5.5.2, read the [version 6 migration guide](documentation/MIGRATING_TO_6.md). Current [CLI](packages/cli/README.md), [library](packages/lib/README.md) and [Obsidian installation](packages/obsidian/README.md) instructions are maintained with the source.
 
-1. Install the `confluence-integration` plugin from Obsidian's community plugins browser.
-2. Open the plugin settings and configure the following fields:
-
-- `Confluence Base URL`: The base URL of your Atlassian Confluence instance (e.g., `https://your-domain.atlassian.net`)
-- `Confluence Parent Id`: The Confluence page ID where your notes will be published as child pages
-- `Atlassian User Name`: Your Atlassian account's email address
-- `Atlassian API Token`: Your Atlassian API token. You can generate one from your [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens).
-- `Folder To Publish`: The name of the folder in Obsidian containing the notes you want to publish (default: "Confluence Pages")
-
-![Settings](./docs/screenshots/settings.png)
-
-## Usage
-
-### Ribbon Icon
-
-Click the cloud icon in the ribbon to publish the notes from the configured folder to Confluence.
-
-![Ribbon icon](./docs/screenshots/ribbon.png)
-
-
-### Commands
-
-Use the command palette (`Ctrl/Cmd + P`) to execute the "Publish All to Confluence" command, which publishes all the notes from the configured folder to Confluence.
-
-![Commands](./docs/screenshots/commands.png)
-
-### connie-publish Frontmatter
-
-To publish pages outside the `folderToPublish`, add the `connie-publish` YAML frontmatter to your notes:
-
-```yaml
----
-connie-publish: true
----
-```
-
-### Example Workflow
-1. Install and configure the `confluence-integration` plugin.
-2. Create a folder in your Obsidian vault named "Confluence Pages" (or the folder name you specified in the settings).
-3. Add notes to this folder or add the connie-publish frontmatter to other notes.
-4. Click the cloud icon in the ribbon or use the "Publish All to Confluence" command to publish your notes to Confluence.
-
-### Contributing
+## Contributing
 Contributions are welcome! If you have a feature request, bug report, or want to improve the plugin, please open an issue or submit a pull request on the GitHub repository.
 
-### License
+## License
 This project is licensed under the [Apache 2.0](https://github.com/markdown-confluence/markdown-confluence/blob/main/LICENSE) License.
 
 ## Disclaimer:
